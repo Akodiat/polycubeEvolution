@@ -1,0 +1,6 @@
+[submodule "polycubes"]
+	path = polycubes
+	url = git@github.com:Akodiat/polycubes.git
+[submodule "gapy"]
+	path = gapy
+	url = git@github.com:Akodiat/gapy.git
