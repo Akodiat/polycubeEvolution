@@ -4,6 +4,7 @@ import random
 import polycubes.solve.py.utils as utils
 import libpolycubes as lp
 import json
+import argparse
 
 class PolycubeGenome(Genome):
     def __init__(self, rule, mutationRate=0.9, mutationWeights=[
@@ -68,10 +69,6 @@ def onGenerationStep(generation, maxFitness, bestGenome):
     print("\nGeneration {}\n  Max fitness: {}\n ({} colors and {} species)  Best genome: {}\n".format(
         generation, maxFitness, nColors, nSpecies, bestGenome))
 
-
-populationSize = 25
-nGenerations = 100
-
 def countColors(rule):
     return max(abs(face['color']) for species in rule for face in species)
 
@@ -79,7 +76,12 @@ def countColors(rule):
 def countNonZero(rule):
     return sum(1 for species in rule for face in species if face['color'] != 0)
 
-def run(solveSpecPath):
+def run(
+    solveSpecPath,
+    populationSize = 25,
+    nGenerations = 100,
+    nProcesses = 5
+):
     with open(solveSpecPath, 'r') as f:
         data = f.read()
     solveSpec = json.loads(data)
@@ -125,8 +127,18 @@ def run(solveSpecPath):
     evolver = GeneticAlgorithm(population, fitnessFunc)
 
     # Evolve for a given number of generations
-    evolver.run(nGenerations, onGenerationStep, nProcesses=5)
+    evolver.run(nGenerations, onGenerationStep, nProcesses=nProcesses)
 
 if __name__ == "__main__":
-    solveSpecPath = 'polycubes/solve/shapes/scaling/cube5.json'
-    run(solveSpecPath)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("solveSpecPath", type=str, help="Path to a shape specification JSON")
+    parser.add_argument("-s", "--populationSize", type=int, default=25,  help="Population size")
+    parser.add_argument("-g", "--nGenerations", type=int, default=100,  help="Number of generations")
+    parser.add_argument("-j", "--nProcesses", type=int, default=1,  help="Number of concurrent processes used to evaluate the population")
+    args = parser.parse_args()
+    run(
+        args.solveSpecPath,
+        populationSize = args.populationSize,
+        nGenerations = args.nGenerations,
+        nProcesses = args.nProcesses
+    )
